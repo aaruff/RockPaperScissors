@@ -7,12 +7,61 @@
 
 import SwiftUI
 
-enum Outcome {
-    case win, lose
+enum Outcome: String, CaseIterable {
+    case win, lose, draw
 }
 
-enum Move {
+enum Move: String, CaseIterable {
     case rock, paper, scissors
+}
+
+struct Player {
+    private var move: Move
+    
+    func playAgainst(otherPlayer: Player) -> Outcome {
+        // The same move results in a tie
+        if move == otherPlayer.move {
+            return Outcome.draw
+        }
+        // Rock blunts scissors
+        else if move == Move.rock && otherPlayer.move == Move.scissors {
+            return Outcome.win
+        }
+        // Rock is wrapped by paper
+        else if move == Move.rock && otherPlayer.move == Move.paper {
+            return Outcome.lose
+        }
+        // Paper wraps rock
+        else if move == Move.paper && otherPlayer.move == Move.rock {
+            return Outcome.win
+        }
+        // Paper is cut by scissors
+        else if move == Move.paper && otherPlayer.move == Move.scissors {
+            return Outcome.lose
+        }
+        // Scissors is blunted by rock
+        else if move == Move.scissors && otherPlayer.move == Move.rock {
+            return Outcome.lose
+        }
+        // Scisors cuts paper
+        else {
+            return Outcome.win
+        }
+    }
+}
+
+struct RockPaperScissorsGame {
+    private var players: [Player]
+    public var outcomes: [Outcome]
+    
+    init(players: [Player]) {
+        for playerA in players {
+            for playerB in players {
+                
+                if playerA
+            }
+        }
+    }
 }
 
 struct MoveButton: View {
@@ -43,19 +92,16 @@ struct MoveButton: View {
 
 
 struct ContentView: View {
-    let outcomeStates = ["Win", "Lose"]
-    let moves = ["Rock", "Paper", "Scissors"]
+    @State var playerMove: Move = Move.rock
+    @State var computerMove = Move.allCases.randomElement() ?? Move.scissors
+    @State var gameOutcome = Outcome.allCases.randomElement() ?? Outcome.win
     
-    @State var choice = Int.random(in: 0..<3)
-    @State var outcome = Int.random(in: 0..<2)
-    @State var move = 0
     var body: some View {
         VStack {
-            Text("If the computer chooses **\(moves[choice])**")
-            Text("What do you play to **\(outcomeStates[outcome])** the game?")
+            Text("If the computer chooses **\(computerMove.rawValue)**")
+            Text("What do you play to **\(gameOutcome.rawValue)** the game?")
             VStack {
                 MoveButton(imageName: "closed-fist", borderWidth: 2, borderColor: Color.gray) {
-                   if (
                 }
                 
                 MoveButton(imageName: "palm", borderWidth: 2, borderColor: Color.gray){
