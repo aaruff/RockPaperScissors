@@ -17,6 +17,7 @@ enum Move: String, CaseIterable {
 
 struct Player {
     private var move: Move
+    private var outcome: Outcome
     
     func playAgainst(otherPlayer: Player) -> Outcome {
         // The same move results in a tie
@@ -51,15 +52,13 @@ struct Player {
 }
 
 struct RockPaperScissorsGame {
+    private var numberPlayers: Int
     private var players: [Player]
     public var outcomes: [Outcome]
     
-    init(players: [Player]) {
-        for playerA in players {
-            for playerB in players {
-                
-                if playerA
-            }
+    init(numberPlayers: Int) {
+        for (i in 0..<numberPlayers) {
+            
         }
     }
 }
