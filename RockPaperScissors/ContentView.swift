@@ -19,13 +19,30 @@ struct Player {
     private var move: Move
     private var outcome: Outcome
     
-    func playAgainst(otherPlayer: Player) -> Outcome {
+}
+
+struct RockPaperScissorsGame {
+    public var round: Int
+    public var playerMoves: [Move]
+    
+    private let totalRounds: Int
+    private var computerMoves: [Move]
+    
+    init(totalRounds: Int) {
+        self.round = 1
+        self.totalRounds = totalRounds
+        for i in 0..<self.totalRounds {
+            computerMoves[i] = Move.allCases.randomElement() ?? Move.scissors
+        }
+    }
+    
+    mutating func playRound() -> Outcome {
         // The same move results in a tie
-        if move == otherPlayer.move {
+        if playerMoves[round] == computerMoves[round] {
             return Outcome.draw
         }
         // Rock blunts scissors
-        else if move == Move.rock && otherPlayer.move == Move.scissors {
+        else if  == Move.rock && otherPlayer.move == Move.scissors {
             return Outcome.win
         }
         // Rock is wrapped by paper
@@ -47,18 +64,6 @@ struct Player {
         // Scisors cuts paper
         else {
             return Outcome.win
-        }
-    }
-}
-
-struct RockPaperScissorsGame {
-    private var numberPlayers: Int
-    private var players: [Player]
-    public var outcomes: [Outcome]
-    
-    init(numberPlayers: Int) {
-        for (i in 0..<numberPlayers) {
-            
         }
     }
 }
