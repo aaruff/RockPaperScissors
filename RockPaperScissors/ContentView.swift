@@ -21,49 +21,73 @@ struct Player {
     
 }
 
-struct RockPaperScissorsGame {
-    public var round: Int
-    public var playerMoves: [Move]
-    
+class RockPaperScissorsGame: ObservableObject {
     private let totalRounds: Int
-    private var computerMoves: [Move]
+    
+    @Published public var round: Int = 1
+    private var computerMoves: [Move] = []
+    private var requiredOutcomes: [Outcome] = []
+    
+    public var computerMove: Move {
+        return computerMoves[round]
+    }
+    public var requiredOutcome: Outcome {
+        return requiredOutcomes[round]
+    }
+    
+    
+    private var playerMoves: [Move] = []
+    private var playerOutcomes: [Outcome] = []
+    
     
     init(totalRounds: Int) {
-        self.round = 1
         self.totalRounds = totalRounds
-        for i in 0..<self.totalRounds {
-            computerMoves[i] = Move.allCases.randomElement() ?? Move.scissors
+        for _ in 0..<self.totalRounds {
+            computerMoves.append(Move.allCases.randomElement() ?? Move.scissors)
+            requiredOutcomes.append(Outcome.allCases.randomElement() ?? Outcome.lose)
         }
     }
     
-    mutating func playRound() -> Outcome {
+    func nextRound() -> Bool {
+        if (round < totalRounds) {
+            round += 1
+            return true
+        }
+        else {
+            return false
+        }
+    }
+    
+    func playRound() {
+        assert(playerOutcomes.count < round, "Player outcome has been added more than once for round \(round).")
+        
         // The same move results in a tie
         if playerMoves[round] == computerMoves[round] {
-            return Outcome.draw
+            playerOutcomes.append(Outcome.draw)
         }
         // Rock blunts scissors
-        else if  == Move.rock && otherPlayer.move == Move.scissors {
-            return Outcome.win
+        else if playerMoves[round] == Move.rock && computerMoves[round] == Move.scissors {
+            playerOutcomes.append(Outcome.win)
         }
         // Rock is wrapped by paper
-        else if move == Move.rock && otherPlayer.move == Move.paper {
-            return Outcome.lose
+        else if playerMoves[round] == Move.rock && computerMoves[round] == Move.paper {
+            playerOutcomes.append(Outcome.lose)
         }
         // Paper wraps rock
-        else if move == Move.paper && otherPlayer.move == Move.rock {
-            return Outcome.win
+        else if playerMoves[round] == Move.paper && computerMoves[round] == Move.rock {
+            playerOutcomes.append(Outcome.win)
         }
         // Paper is cut by scissors
-        else if move == Move.paper && otherPlayer.move == Move.scissors {
-            return Outcome.lose
+        else if playerMoves[round] == Move.paper && computerMoves[round] == Move.scissors {
+            playerOutcomes.append(Outcome.lose)
         }
         // Scissors is blunted by rock
-        else if move == Move.scissors && otherPlayer.move == Move.rock {
-            return Outcome.lose
+        else if playerMoves[round] == Move.scissors && computerMoves[round] == Move.rock {
+            playerOutcomes.append(Outcome.lose)
         }
         // Scisors cuts paper
         else {
-            return Outcome.win
+            playerOutcomes.append(Outcome.win)
         }
     }
 }
@@ -96,14 +120,12 @@ struct MoveButton: View {
 
 
 struct ContentView: View {
-    @State var playerMove: Move = Move.rock
-    @State var computerMove = Move.allCases.randomElement() ?? Move.scissors
-    @State var gameOutcome = Outcome.allCases.randomElement() ?? Outcome.win
+    @ObservedObject var game = RockPaperScissorsGame(totalRounds: 3)
     
     var body: some View {
         VStack {
-            Text("If the computer chooses **\(computerMove.rawValue)**")
-            Text("What do you play to **\(gameOutcome.rawValue)** the game?")
+            Text("If the computer chooses **\(game.computerMove.rawValue)**")
+            Text("What do you play to **\(game.requiredOutcome.rawValue)** the game?")
             VStack {
                 MoveButton(imageName: "closed-fist", borderWidth: 2, borderColor: Color.gray) {
                 }
