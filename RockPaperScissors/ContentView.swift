@@ -31,6 +31,7 @@ class RockPaperScissorsGame: ObservableObject {
     public var computerMove: Move {
         return computerMoves[round]
     }
+    
     public var requiredOutcome: Outcome {
         return requiredOutcomes[round]
     }
@@ -39,13 +40,16 @@ class RockPaperScissorsGame: ObservableObject {
     private var playerMoves: [Move] = []
     private var playerOutcomes: [Outcome] = []
     
-    
     init(totalRounds: Int) {
         self.totalRounds = totalRounds
         for _ in 0..<self.totalRounds {
             computerMoves.append(Move.allCases.randomElement() ?? Move.scissors)
             requiredOutcomes.append(Outcome.allCases.randomElement() ?? Outcome.lose)
         }
+    }
+    
+    func addPlayerMove(move: Move) {
+        playerMoves.append(move)
     }
     
     func nextRound() -> Bool {
@@ -58,8 +62,11 @@ class RockPaperScissorsGame: ObservableObject {
         }
     }
     
-    func playRound() {
+    func playRound(playerMove: Move) {
         assert(playerOutcomes.count < round, "Player outcome has been added more than once for round \(round).")
+        assert(playerMoves.count < round, "Player move has been added more than once for round \(round).")
+        
+        playerMoves.append(playerMove)
         
         // The same move results in a tie
         if playerMoves[round] == computerMoves[round] {
@@ -107,20 +114,19 @@ struct MoveButton: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width:100)
-                        
                     }
                 )
                 .padding()
                 .overlay(
                     RoundedRectangle(cornerRadius: 40)
                         .stroke(borderColor, lineWidth: borderWidth))
-        
     }
 }
 
 
 struct ContentView: View {
     @ObservedObject var game = RockPaperScissorsGame(totalRounds: 3)
+    @State var roundOver = false
     
     var body: some View {
         VStack {
@@ -128,15 +134,19 @@ struct ContentView: View {
             Text("What do you play to **\(game.requiredOutcome.rawValue)** the game?")
             VStack {
                 MoveButton(imageName: "closed-fist", borderWidth: 2, borderColor: Color.gray) {
+                    game.playRound(playerMove: Move.rock)
                 }
                 
                 MoveButton(imageName: "palm", borderWidth: 2, borderColor: Color.gray){
-                    
+                    game.playRound(playerMove: Move.paper)
                 }
                 
                 MoveButton(imageName: "victory-2", borderWidth: 2, borderColor: Color.gray){
-                    
+                    game.playRound(playerMove: Move.scissors)
                 }
+            }
+            .alert(isPresented: $roundOver) {
+                Alert(title: Text("End of Round"), message: Text())
             }
         }
         .padding()
