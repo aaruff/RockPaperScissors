@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum Outcome: String, CaseIterable {
+enum GameOutcome: String, CaseIterable {
     case win, lose, draw
 }
 
@@ -15,36 +15,46 @@ enum Move: String, CaseIterable {
     case rock, paper, scissors
 }
 
-struct Player {
-    private var move: Move
-    private var outcome: Outcome
-    
-}
 
-class RockPaperScissorsGame: ObservableObject {
-    private let totalRounds: Int
-    
-    @Published public var round: Int = 1
+class RockPaperScissorQuiz: ObservableObject {
+    private let _totalRounds: Int
+    private var _score: Int = 0
+    private var _round: Int = 1
     private var computerMoves: [Move] = []
-    private var requiredOutcomes: [Outcome] = []
+    private var requiredOutcomes: [GameOutcome] = []
+    private var playerMoves: [Move] = []
+    private var playerOutcomes: [GameOutcome] = []
+    private var quizOutcomes: [Bool] = []
+    
+    public var score: Int {
+      get {return _score}
+    }
+    
+    public var round: Int {
+        get {return _round}
+    }
+    
+    public var outcome: Bool {
+        get {
+            return quizOutcomes[_round]
+        }
+    }
+    
     
     public var computerMove: Move {
-        return computerMoves[round]
+        return computerMoves[_round]
     }
     
-    public var requiredOutcome: Outcome {
-        return requiredOutcomes[round]
+    public var requiredOutcome: GameOutcome {
+        return requiredOutcomes[_round]
     }
     
-    
-    private var playerMoves: [Move] = []
-    private var playerOutcomes: [Outcome] = []
     
     init(totalRounds: Int) {
-        self.totalRounds = totalRounds
-        for _ in 0..<self.totalRounds {
+        self._totalRounds = totalRounds
+        for _ in 0..<self._totalRounds {
             computerMoves.append(Move.allCases.randomElement() ?? Move.scissors)
-            requiredOutcomes.append(Outcome.allCases.randomElement() ?? Outcome.lose)
+            requiredOutcomes.append(GameOutcome.allCases.randomElement() ?? GameOutcome.lose)
         }
     }
     
@@ -53,8 +63,8 @@ class RockPaperScissorsGame: ObservableObject {
     }
     
     func nextRound() -> Bool {
-        if (round < totalRounds) {
-            round += 1
+        if (_round < _totalRounds) {
+            _round += 1
             return true
         }
         else {
@@ -63,38 +73,43 @@ class RockPaperScissorsGame: ObservableObject {
     }
     
     func playRound(playerMove: Move) {
-        assert(playerOutcomes.count < round, "Player outcome has been added more than once for round \(round).")
-        assert(playerMoves.count < round, "Player move has been added more than once for round \(round).")
+        assert(playerOutcomes.count < _round, "Player outcome has been added more than once for round \(_round).")
+        assert(playerMoves.count < _round, "Player move has been added more than once for round \(_round).")
         
         playerMoves.append(playerMove)
         
         // The same move results in a tie
-        if playerMoves[round] == computerMoves[round] {
-            playerOutcomes.append(Outcome.draw)
+        if playerMoves[_round] == computerMoves[_round] {
+            playerOutcomes.append(GameOutcome.draw)
         }
         // Rock blunts scissors
-        else if playerMoves[round] == Move.rock && computerMoves[round] == Move.scissors {
-            playerOutcomes.append(Outcome.win)
+        else if playerMoves[_round] == Move.rock && computerMoves[_round] == Move.scissors {
+            playerOutcomes.append(GameOutcome.win)
         }
         // Rock is wrapped by paper
-        else if playerMoves[round] == Move.rock && computerMoves[round] == Move.paper {
-            playerOutcomes.append(Outcome.lose)
+        else if playerMoves[_round] == Move.rock && computerMoves[_round] == Move.paper {
+            playerOutcomes.append(GameOutcome.lose)
         }
         // Paper wraps rock
-        else if playerMoves[round] == Move.paper && computerMoves[round] == Move.rock {
-            playerOutcomes.append(Outcome.win)
+        else if playerMoves[_round] == Move.paper && computerMoves[_round] == Move.rock {
+            playerOutcomes.append(GameOutcome.win)
         }
         // Paper is cut by scissors
-        else if playerMoves[round] == Move.paper && computerMoves[round] == Move.scissors {
-            playerOutcomes.append(Outcome.lose)
+        else if playerMoves[_round] == Move.paper && computerMoves[_round] == Move.scissors {
+            playerOutcomes.append(GameOutcome.lose)
         }
         // Scissors is blunted by rock
-        else if playerMoves[round] == Move.scissors && computerMoves[round] == Move.rock {
-            playerOutcomes.append(Outcome.lose)
+        else if playerMoves[_round] == Move.scissors && computerMoves[_round] == Move.rock {
+            playerOutcomes.append(GameOutcome.lose)
         }
         // Scisors cuts paper
         else {
-            playerOutcomes.append(Outcome.win)
+            playerOutcomes.append(GameOutcome.win)
+        }
+        
+        quizOutcomes.append(playerOutcomes[_round] == requiredOutcomes[_round])
+        if (quizOutcomes[_round]) {
+            _score += 1
         }
     }
 }
@@ -125,7 +140,7 @@ struct MoveButton: View {
 
 
 struct ContentView: View {
-    @ObservedObject var game = RockPaperScissorsGame(totalRounds: 3)
+    private var game = RockPaperScissorQuiz(totalRounds: 3)
     @State var roundOver = false
     
     var body: some View {
@@ -135,18 +150,24 @@ struct ContentView: View {
             VStack {
                 MoveButton(imageName: "closed-fist", borderWidth: 2, borderColor: Color.gray) {
                     game.playRound(playerMove: Move.rock)
+                    roundOver = true
                 }
                 
                 MoveButton(imageName: "palm", borderWidth: 2, borderColor: Color.gray){
                     game.playRound(playerMove: Move.paper)
+                    roundOver = true
                 }
                 
                 MoveButton(imageName: "victory-2", borderWidth: 2, borderColor: Color.gray){
                     game.playRound(playerMove: Move.scissors)
+                    roundOver = true
                 }
             }
             .alert(isPresented: $roundOver) {
-                Alert(title: Text("End of Round"), message: Text())
+                Alert(
+                    title: Text("End of Round"),
+                    message: Text("You made the \(game.outcome ? "correct" : "incorrect") move.")
+                    dismissButton: .default(Text("OK")))
             }
         }
         .padding()
