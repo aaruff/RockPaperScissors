@@ -150,7 +150,7 @@ class RockPaperScissorQuiz: ObservableObject {
 struct MoveButton: View {
     var imageName: String
     var borderWidth: CGFloat
-    var borderColor: Color
+    var backgroundColor: Color
     var action: () -> Void
     
     var body: some View {
@@ -165,9 +165,8 @@ struct MoveButton: View {
                     }
                 )
                 .padding()
-                .overlay(
-                    RoundedRectangle(cornerRadius: 40)
-                        .stroke(borderColor, lineWidth: borderWidth))
+                .buttonStyle(.bordered)
+                .tint(backgroundColor)
     }
 }
 
@@ -175,6 +174,7 @@ struct MoveButton: View {
 struct ContentView: View {
     @State var roundOver = false
     @State var gameOver = false
+    @State var mainViewOpacity = 1.0
     @State var computerMove: String
     @State var requiredOutcome: String
     
@@ -192,7 +192,7 @@ struct ContentView: View {
                 Text("If the computer chooses **\(computerMove)**")
                 Text("What do you play to **\(requiredOutcome)** the game?")
                 VStack {
-                    MoveButton(imageName: "closed-fist", borderWidth: 2, borderColor: Color.gray, action: {
+                    MoveButton(imageName: "closed-fist", borderWidth: 2, backgroundColor: game.computerMove == Move.rock ? Color.red : Color.gray, action: {
                         game.playRound(playerMove: Move.rock)
                         if (!game.isLastRound()) {
                             roundOver = true
@@ -200,9 +200,12 @@ struct ContentView: View {
                         else {
                             gameOver = true
                         }
+                        withAnimation(.linear(duration: 0.2)) {
+                            mainViewOpacity = 0.5
+                        }
                     })
                     
-                    MoveButton(imageName: "palm", borderWidth: 2, borderColor: Color.gray, action: {
+                    MoveButton(imageName: "palm", borderWidth: 2, backgroundColor: game.computerMove == Move.paper ? Color.red : Color.gray, action: {
                         game.playRound(playerMove: Move.paper)
                         if (!game.isLastRound()) {
                             roundOver = true
@@ -210,15 +213,21 @@ struct ContentView: View {
                         else {
                             gameOver = true
                         }
+                        withAnimation(.linear(duration: 0.2)) {
+                            mainViewOpacity = 0.5
+                        }
                     })
                     
-                    MoveButton(imageName: "victory-2", borderWidth: 2, borderColor: Color.gray, action: {
+                    MoveButton(imageName: "victory-2", borderWidth: 2, backgroundColor: game.computerMove == Move.scissors ? Color.red : Color.gray, action: {
                         game.playRound(playerMove: Move.scissors)
                         if (!game.isLastRound()) {
                             roundOver = true
                         }
                         else {
                             gameOver = true
+                        }
+                        withAnimation(.linear(duration: 0.2)) {
+                            mainViewOpacity = 0.5
                         }
                     })
                     HStack {
@@ -231,6 +240,10 @@ struct ContentView: View {
                         title: Text(game.isLastRound() ? "End of Game" : "End of Round"),
                         message: Text("You made the \(game.outcome ? "correct" : "incorrect") move."),
                         dismissButton: .default(Text("OK")){
+                            withAnimation(.easeInOut(duration: 0.5)) {
+                                mainViewOpacity = 1.0
+                            }
+                            
                             if (!game.isLastRound()) {
                                 game.nextRound()
                                 computerMove = game.computerMove.rawValue
@@ -243,7 +256,8 @@ struct ContentView: View {
                 }
             }
             .padding()
-            .animation(.default, value: !gameOver)
+            .opacity(mainViewOpacity)
+            
         }
     }
     
