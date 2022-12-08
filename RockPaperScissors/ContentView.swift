@@ -11,7 +11,6 @@ enum GameOutcome: String, CaseIterable {
     case win, lose, draw
 }
 
-
 enum Move: String, CaseIterable {
     case rock, paper, scissors
 }
@@ -175,6 +174,7 @@ struct MoveButton: View {
 
 struct ContentView: View {
     @State var roundOver = false
+    @State var gameOver = false
     @State var computerMove: String
     @State var requiredOutcome: String
     
@@ -187,46 +187,64 @@ struct ContentView: View {
     }
     
     var body: some View {
-        VStack {
-            Text("If the computer chooses **\(computerMove)**")
-            Text("What do you play to **\(requiredOutcome)** the game?")
+        Group {
             VStack {
-                MoveButton(imageName: "closed-fist", borderWidth: 2, borderColor: Color.gray, action: {
-                    game.playRound(playerMove: Move.rock)
-                    roundOver = true
-                })
-                
-                MoveButton(imageName: "palm", borderWidth: 2, borderColor: Color.gray, action: {
-                    game.playRound(playerMove: Move.paper)
-                    roundOver = true
-                })
-                
-                MoveButton(imageName: "victory-2", borderWidth: 2, borderColor: Color.gray, action: {
-                    game.playRound(playerMove: Move.scissors)
-                    roundOver = true
-                })
-                HStack {
-                    GameDataRectangle(title: "Round", value: game.round, color: .gray)
-                    GameDataRectangle(title: "Score", value: game.score, color: .orange)
-                }
-            }
-            .alert(isPresented: $roundOver) {
-                Alert(
-                    title: Text(game.isLastRound() ? "End of Game" : "End of Round"),
-                    message: Text("You made the \(game.outcome ? "correct" : "incorrect") move."),
-                    dismissButton: .default(Text("OK")){
+                Text("If the computer chooses **\(computerMove)**")
+                Text("What do you play to **\(requiredOutcome)** the game?")
+                VStack {
+                    MoveButton(imageName: "closed-fist", borderWidth: 2, borderColor: Color.gray, action: {
+                        game.playRound(playerMove: Move.rock)
                         if (!game.isLastRound()) {
-                            game.nextRound()
-                            computerMove = game.computerMove.rawValue
-                            requiredOutcome = game.requiredOutcome.rawValue
+                            roundOver = true
                         }
                         else {
-                            game.newGame()
+                            gameOver = true
                         }
                     })
+                    
+                    MoveButton(imageName: "palm", borderWidth: 2, borderColor: Color.gray, action: {
+                        game.playRound(playerMove: Move.paper)
+                        if (!game.isLastRound()) {
+                            roundOver = true
+                        }
+                        else {
+                            gameOver = true
+                        }
+                    })
+                    
+                    MoveButton(imageName: "victory-2", borderWidth: 2, borderColor: Color.gray, action: {
+                        game.playRound(playerMove: Move.scissors)
+                        if (!game.isLastRound()) {
+                            roundOver = true
+                        }
+                        else {
+                            gameOver = true
+                        }
+                    })
+                    HStack {
+                        GameDataRectangle(title: "Round", value: game.round, color: .gray)
+                        GameDataRectangle(title: "Score", value: game.score, color: .orange)
+                    }
+                }
+                .alert(isPresented: $roundOver) {
+                    Alert(
+                        title: Text(game.isLastRound() ? "End of Game" : "End of Round"),
+                        message: Text("You made the \(game.outcome ? "correct" : "incorrect") move."),
+                        dismissButton: .default(Text("OK")){
+                            if (!game.isLastRound()) {
+                                game.nextRound()
+                                computerMove = game.computerMove.rawValue
+                                requiredOutcome = game.requiredOutcome.rawValue
+                            }
+                            else {
+                                game.newGame()
+                            }
+                        })
+                }
             }
+            .padding()
+            .animation(.default, value: !gameOver)
         }
-        .padding()
     }
     
     func handleButtonTapped() {
