@@ -162,11 +162,11 @@ struct MoveButton: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width:100)
+                            .padding()
+                            .background(backgroundColor)
+                            .cornerRadius(20)
                     }
                 )
-                .padding()
-                .buttonStyle(.bordered)
-                .tint(backgroundColor)
     }
 }
 
