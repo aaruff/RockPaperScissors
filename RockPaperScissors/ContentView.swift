@@ -189,10 +189,10 @@ struct ContentView: View {
     var body: some View {
         Group {
             VStack {
-                Text("If the computer chooses **\(computerMove)**")
-                Text("What do you play to **\(requiredOutcome)** the game?")
+                Text("\(requiredOutcome.capitalized) Against \(computerMove.capitalized)")
+                    .font(.largeTitle)
                 VStack {
-                    MoveButton(imageName: "closed-fist", borderWidth: 2, backgroundColor: game.computerMove == Move.rock ? Color.red : Color.gray, action: {
+                    MoveButton(imageName: "closed-fist", borderWidth: 2, backgroundColor: game.computerMove == Move.rock ? Color("LightRed") : Color("LightGray"), action: {
                         game.playRound(playerMove: Move.rock)
                         if (!game.isLastRound()) {
                             roundOver = true
@@ -205,7 +205,7 @@ struct ContentView: View {
                         }
                     })
                     
-                    MoveButton(imageName: "palm", borderWidth: 2, backgroundColor: game.computerMove == Move.paper ? Color.red : Color.gray, action: {
+                    MoveButton(imageName: "palm", borderWidth: 2, backgroundColor: game.computerMove == Move.paper ? Color("LightRed") : Color("LightGray"), action: {
                         game.playRound(playerMove: Move.paper)
                         if (!game.isLastRound()) {
                             roundOver = true
@@ -218,7 +218,7 @@ struct ContentView: View {
                         }
                     })
                     
-                    MoveButton(imageName: "victory-2", borderWidth: 2, backgroundColor: game.computerMove == Move.scissors ? Color.red : Color.gray, action: {
+                    MoveButton(imageName: "victory-2", borderWidth: 2, backgroundColor: game.computerMove == Move.scissors ? Color("LightRed") : Color("LightGray"), action: {
                         game.playRound(playerMove: Move.scissors)
                         if (!game.isLastRound()) {
                             roundOver = true
