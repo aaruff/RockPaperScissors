@@ -249,10 +249,22 @@ struct ContentView: View {
                                 computerMove = game.computerMove.rawValue
                                 requiredOutcome = game.requiredOutcome.rawValue
                             }
-                            else {
-                                game.newGame()
-                            }
                         })
+                }
+                .sheet(isPresented: $gameOver, onDismiss: {
+                    self.gameOver = false
+                    self.roundOver = false
+                    game.newGame()
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        mainViewOpacity = 1.0
+                    }
+                }) {
+                    Text("Final Score")
+                    .font(.largeTitle)
+                    HStack {
+                        GameDataRectangle(title: "Total Rounds", value: game.round, color: .gray)
+                        GameDataRectangle(title: "Your Score", value: game.score, color: .orange)
+                    }
                 }
             }
             .padding()
